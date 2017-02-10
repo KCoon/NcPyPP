@@ -1,44 +1,51 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Feb  3 09:35:30 2017
+'''
+@file
+Mainprogram
 
-@author: sven.langer
-"""
+@author: Sven Langer
+@copyright: Sven Langer
+'''
+
+from parameter import GetParameter, ReadPyppfile, ValidateParameter
+import Languages.Iso._Mitsubishi
+import Languages.Iso.Mitsubishi._M700
 
 import sys
+import re
 
-def foo():
-    """
-    My numpydoc description of a kind of very exhautive numpydoc format docstring.
+def GetHelp():
+    '''
+    Returns help file
 
-    Parameters
-    ----------
-    first : array_like
-        the 1st param name `first`
-    second :
-        the 2nd param
-    third : {'value', 'other'}, optional
-        the 3rd param, by default 'value'
-    
-    Returns
-    -------
-    string
-        a value in a string
-    
-    Raises
-    ------
-    KeyError
-        when a key error
-    OtherError
-    when an other error
-    """
-    print("bar")
-                
+    @author Sven Langer
+    '''
+    msg = "NcPyPP is a postprocessor engine for nc programs"
+    return msg
+
+
 def main(argv):
-    print(argv[0])
-    foo()
-    
+    # for key, value in ReadPyppfile('./Pyppfile').items():
+    #    print(key,'\t', value)
+    for key, value in GetParameter(ReadPyppfile()).items():
+        print(key, '\t', value)
+    ValidateParameter()
+
+    if len(argv) > 0:
+        if len(argv) > 1:
+            print(GetHelp())
+            return
+        cmd = argv[0].lower()
+
+        if cmd == "language":
+            print(GetLanguage())
+        elif cmd == "dialect":
+            print(GetDialect())
+        elif cmd == "machine":
+            print(GetMachine())
+        else:
+            print(GetHelp())
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-    
