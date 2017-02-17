@@ -1,0 +1,6 @@
+docu/DoxyError.log
+docu/html
+docu/latex
+__pycache__
+*out
+*tmp

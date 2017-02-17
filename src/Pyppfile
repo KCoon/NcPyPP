@@ -3,25 +3,25 @@
 # This file descripes the settings for nc postprocessing with NcPyPP (www.github.com/kcoon/NcPyPP).
 
 # Path to the language files. Default: './Language'
-PATH_LANGUAGE = ./Languages
+PATH_LANGUAGE = ./ncpypp/languages
 
 # Required
-INPUT_LANGUAGE = Iso
+INPUT_LANGUAGE = iso
 
 # If unspecified, INPUT_LANGUAGE is used.
-INPUT_DIALECT = Mitsubishi
+INPUT_DIALECT = mitsubishi 
 
 # If unspecified, INPUT_DIALECT is used.
-INPUT_MACHINE = M700
+INPUT_INSTANCE = 
 
 # If unspecified, INPUT_LANGUAGE is used.
-OUTPUT_LANGUAGE = Iso
+OUTPUT_LANGUAGE = iso
 
 # If unspecified, OUTPUT_LANGUAGE is used.
-OUTPUT_DIALECT = Mitsubishi
+OUTPUT_DIALECT = mitsubishi
 
 # IF unspecified, OUTPUT_DIALECT is used.
-OUTPUT_MACHINE= M700
+OUTPUT_INSTANCE= m700
 
 # Numbering lines. YES/NO
 NUMBER = YES
