@@ -8,13 +8,10 @@ main program
 @copyright: Sven Langer
 '''
 
-from ncpypp.parameter import Parameter
-from ncpypp.pp import PP
-import ncpypp.languages.iso.mitsubishi.mitsubishi
-import ncpypp.languages.iso.mitsubishi.m700
 from sys import argv
 from os import chdir
 from os.path import abspath, dirname
+from ncpypp.pp import PP
 
 
 def get_help():
@@ -29,11 +26,20 @@ def get_help():
 
 
 def main(args):
-    # for key, value in get_parameter(read_pyppfile()).items():
-        # print(key, '\t', value)
+    '''
+    @brief entry point of the application
+    @param <string-type> commandline arguments
+    @return None
+    @exception None
+    '''
 
-    pp = PP('../input/example.i')
-    # pp.parse()
+    # for key, value in get_parameter(read_pyppfile()).items():
+    # print(key, '\t', value)
+
+    print(args)
+    parser = PP('../input/example.i')
+    parser.parse()
+
 
 if __name__ == "__main__":
     chdir(dirname(abspath(__file__)))

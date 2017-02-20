@@ -1,6 +1,6 @@
+''' todo doc-string '''
 import re
 from os import listdir
-import os.path
 from os.path import isfile, join, isdir
 import importlib
 
@@ -33,7 +33,7 @@ class Parameter:
         para = {}
         print(path)
         import os
-        print (os.getcwd())
+        print(os.getcwd())
         with open(path, 'r') as f:
             for line in f:
                 line = line.strip()
@@ -49,38 +49,38 @@ class Parameter:
     # todo
     def validate_parameter(self):
         # PATH_LANGUAGE
-        if False == isdir(self.parameter['PATH_LANGUAGE']):
+        if not isdir(self.parameter['PATH_LANGUAGE']):
             raise Exception('PATH_LANGUAGE directory does not exist.')
         # INPUT_LANGUAGE
         if self.parameter['INPUT_LANGUAGE'] not in self.languages:
             raise Exception('INPUT_LANGUAGE', self.parameter[
-                            'INPUT_LANGUAGE'], 'unknown')
+                'INPUT_LANGUAGE'], 'unknown')
         # INPUT_DIALECT
         if self.parameter['INPUT_LANGUAGE'] + '/' + \
            self.parameter['INPUT_DIALECT'] not in self.dialects:
             raise Exception('INPUT_DIALECT', self.parameter[
-                            'INPUT_DIALECT'], 'unknown')
+                'INPUT_DIALECT'], 'unknown')
         # INPUT_MACHINE
         if self.parameter['INPUT_LANGUAGE'] + '/' + \
-           self.parameter['INPUT_DIALECT']  + '/' + \
+           self.parameter['INPUT_DIALECT'] + '/' + \
            self.parameter['INPUT_INSTANCE'] not in self.instances:
             raise Exception('INPUT_INSTANCE', self.parameter[
-                            'INPUT_INSTANCE'], 'unknown')
+                'INPUT_INSTANCE'], 'unknown')
         # OUTPUT_LANGUAGE
         if self.parameter['OUTPUT_LANGUAGE'] not in self.languages:
             raise Exception('OUTPUT_LANGUAGE', self.parameter[
-                            'OUTPUT_LANGUAGE'], 'unknown')
+                'OUTPUT_LANGUAGE'], 'unknown')
         # OUTPUT_DIALECT
         if self.parameter['OUTPUT_LANGUAGE'] + '/' + \
            self.parameter['OUTPUT_DIALECT'] not in self.dialects:
             raise Exception('OUTPUT_DIALECT', self.parameter[
-                            'OUTPUT_DIALECT'], 'unknown')
+                'OUTPUT_DIALECT'], 'unknown')
         # OUTPUT_MACHINE
         if self.parameter['OUTPUT_LANGUAGE'] + '/' + \
-           self.parameter['OUTPUT_DIALECT']  + '/' + \
+           self.parameter['OUTPUT_DIALECT'] + '/' + \
            self.parameter['OUTPUT_INSTANCE'] not in self.instances:
             raise Exception('OUTPUT_INSTANCE', self.parameter[
-                            'OUTPUT_INSTANCE'], 'unknown')
+                'OUTPUT_INSTANCE'], 'unknown')
 
     def _get_languages(self):
         """
@@ -116,19 +116,25 @@ class Parameter:
             dirs = self.parameter['PATH_LANGUAGE'] + '/' + dial
             for f in listdir(dirs):
                 if isfile(join(dirs, f)) and \
-                   re.search("^[a-z]\w*.py$", f) is not None:
+                   re.search(r"^[a-z]\w*.py$", f) is not None:
                     instances.append(dial + '/' + f[:-3])
         return instances, dials, langs
 
-
     def _load_modules(self):
         if self.parameter['INPUT_INSTANCE'] is not "":
-            self.in_mod = importlib.import_module('ncpypp.languages' + '.' + self.parameter['INPUT_LANGUAGE'] + '.' +
-                    self.parameter['INPUT_DIALECT'] + '.' +
-                        self.parameter['INPUT_INSTANCE'])
+            self.in_mod = importlib.import_module(
+                'ncpypp.languages' + '.' +
+                self.parameter['INPUT_LANGUAGE'] + '.' +
+                self.parameter['INPUT_DIALECT'] + '.' +
+                self.parameter['INPUT_INSTANCE'])
         elif self.parameter['INPUT_DIALECT'] is not "":
-            self.in_mod = importlib.import_module('ncpypp.languages' + '.' + self.parameter['INPUT_LANGUAGE'] + '.' +
-                    self.parameter['INPUT_DIALECT'] + '.' + self.parameter['INPUT_DIALECT'])
+            self.in_mod = importlib.import_module(
+                'ncpypp.languages' + '.' +
+                self.parameter['INPUT_LANGUAGE'] + '.' +
+                self.parameter['INPUT_DIALECT'] + '.' +
+                self.parameter['INPUT_DIALECT'])
         else:
-            self.in_mod = importlib.import_module('ncpypp.languages' + '.' + self.parameter['INPUT_LANGUAGE'] + '.' +
-                    self.parameter['INPUT_LANGUAGE'])
+            self.in_mod = importlib.import_module(
+                'ncpypp.languages' + '.' +
+                self.parameter['INPUT_LANGUAGE'] + '.' +
+                self.parameter['INPUT_LANGUAGE'])

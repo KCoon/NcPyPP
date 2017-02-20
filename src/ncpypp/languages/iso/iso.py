@@ -1,10 +1,11 @@
+''' @todo   adding doctstring '''
 import re
 
 
-class Language:
+class Language(object):
 
     def __init__(self):
-        self.id = 'iso'
+        self.id_ = 'iso'
 
     def remove_numbers(self, str):
         match = re.search(r'''^(\d*\s*)(.*)''', str)
@@ -32,6 +33,5 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
 officia deserunt mollit anim id est laborum.""" + '\n'
 
 
-class Instance (Language):
-        pass
-
+class Instance(Language):
+    pass
