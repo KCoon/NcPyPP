@@ -8,7 +8,6 @@
 @copyright: Sven Langer
 '''
 
-import re
 from ncpypp.parameter import Parameter
 from ncpypp.languages.pypplang import Pypplang
 
@@ -23,13 +22,13 @@ class PP:
         self.input = file
         self.output = self.input + '.out'
         self.temp = self.input + '.tmp'
-        self.parse()
 
     def parse(self):
         with open(self.temp, 'w') as temp:
             with open(self.output, 'w') as output:
                 with open(self.input, 'r') as input:
                     l = ''
+                    output.write(self.o.id_ + '\n')
                     for line in input:
                         l += line.strip()
                         if l.startswith("[[") and not l.endswith("]]"):
@@ -39,11 +38,10 @@ class PP:
                         # expand macro
                         s = self.t.expand(s)
                         temp.write(s)
-                        s = self.o.expand(s)
-                        output.write(s)
+                        for line2 in s.splitlines():
+                            output.write(self.o.expand(line2))
                         l = ''
 
     def expand(self, str):
         if str.lower() == 'lorem':
-            return self.lorem()
-
+            return self.o.lorem()

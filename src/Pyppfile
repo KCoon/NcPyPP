@@ -9,7 +9,7 @@ PATH_LANGUAGE = ./ncpypp/languages
 INPUT_LANGUAGE = iso
 
 # If unspecified, INPUT_LANGUAGE is used.
-INPUT_DIALECT = mitsubishi 
+INPUT_DIALECT = 
 
 # If unspecified, INPUT_DIALECT is used.
 INPUT_INSTANCE = 
@@ -18,10 +18,10 @@ INPUT_INSTANCE =
 OUTPUT_LANGUAGE = iso
 
 # If unspecified, OUTPUT_LANGUAGE is used.
-OUTPUT_DIALECT = mitsubishi
+OUTPUT_DIALECT =
 
 # IF unspecified, OUTPUT_DIALECT is used.
-OUTPUT_INSTANCE= m700
+OUTPUT_INSTANCE= 
 
 # Numbering lines. YES/NO
 NUMBER = YES

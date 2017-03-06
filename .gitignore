@@ -4,3 +4,4 @@ docu/latex
 __pycache__
 *out
 *tmp
+*swp
