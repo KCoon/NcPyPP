@@ -39,7 +39,7 @@ class PP:
                         s = self.t.expand(s)
                         temp.write(s)
                         for line2 in s.splitlines():
-                            output.write(self.o.expand(line2))
+                            output.write(self.o.expand(line2.strip()))
                         l = ''
 
     def expand(self, str):

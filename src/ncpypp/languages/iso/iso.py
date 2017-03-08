@@ -6,6 +6,8 @@ class Language(object):
 
     def __init__(self):
         self.id_ = 'iso'
+        self.write_feed = False
+        self.feed = 0
 
     def remove_numbers(self, str):
         match = re.search(r'''^(\d*\s*)(.*)''', str)
@@ -16,15 +18,32 @@ class Language(object):
         if match is None:
             return str + "\n"
 
-        match = match.group(1).lower()
-        if match == "lorem":
+        # dummy lorem ipsum
+        match_lorem = re.search(r'''^\[\[lorem\]\]''', str, re.IGNORECASE)
+        if match_lorem is not None:
             return self.lorem()
 
-        match_line = re.search(r'''^line\((-?\d*\.?\d*),(-?\d*\.?\d*),(-?\d*\.?\d*)\)''', match)
+        # comment
+        match_comment = re.search(r'''^\[\[comment:(.*)\]\]''',
+                                  str, re.IGNORECASE)
+        if match_comment is not None:
+            return "(" + match_comment.group(1) + ")\n"
 
+        # feedrate
+        match_feed = re.search(r'''^\[\[(feed\((\d*)\))\]\]''',
+                               str, re.IGNORECASE)
+        if match_feed is not None:
+            self.feed = match_feed.group(2)
+            self.write_feed = True
+            return ""
+
+        # linear movement G1
+        match_line = re.search(r'line\((-?\d*\.?\d*)\s*,\s*'
+                               r'(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
+                               str, re.IGNORECASE)
         if match_line is not None:
             return self.line(match_line.group(1), match_line.group(2),
-                    match_line.group(3))
+                             match_line.group(3))
 
         return str
 
@@ -38,11 +57,22 @@ in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
 officia deserunt mollit anim id est laborum.""" + '\n'
 
-    def line(self,x,y,z):
-        result = "G1 X" + str(x)
-        result += " Y" + str(y)
-        result += " Z" + str(z) + "\n"
+    def line(self, x, y, z):
+        feed = ""
+        if self.write_feed:
+            feed = " F" + str(self.feed)
+            self.write_feed = False
+
+        result = "G1"
+        if x:
+            result += " X" + str(x)
+        if y:
+            result += " Y" + str(y)
+        if z:
+            result += " Z" + str(z)
+        result += feed + "\n"
         return result
+
 
 class Instance(Language):
     pass

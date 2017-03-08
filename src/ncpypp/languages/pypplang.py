@@ -1,4 +1,5 @@
 import re
+import math
 
 
 class Pypplang:
@@ -20,20 +21,45 @@ class Pypplang:
             w = re.search(r'''(w\s*=\s*(-?\d*\.?\d*))''', str).group(2)
             h = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', str).group(2)
             p = re.search(r'''(p\s*=\s*(-?\d*\.?\d*))''', str).group(2)
-            f = re.search(r'''(f\s*=\s*(-?\d*\.?\d*))''', str).group(2)
+            f = re.search(r'''(f\s*=\s*(-?\d*))''', str).group(2)
             return self.rect(float(l), float(w), float(h),
                              float(f),
                              [float(x), float(y), float(z)],
                              float(p))
+        elif match.startswith("sphere:"):
+            X = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            R = re.search(r'''(r_1\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_2\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1\s*=\s*(-?\d*\.?\d*))''',
+                              match).group(2)
+            phi_2 = re.search(r'''(phi_2\s*=\s*(-?\d*\.?\d*))''',
+                              match).group(2)
+            theta_1 = re.search(r'''(theta_1\s*=\s*(-?\d*\.?\d*))''',
+                                match).group(2)
+            theta_2 = re.search(r'''(theta_2\s*=\s*(-?\d*\.?\d*))''',
+                                match).group(2)
+            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+                                  match).group(2)
+            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+                                   match).group(2)
+            gap = re.search(r'''(gap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
+            return self.sphere(float(X), float(Y), float(Z),
+                               float(R), float(r), float(phi_1),
+                               float(phi_2), float(theta_1), float(theta_2),
+                               float(clearance), float(retraction),
+                               float(gap), float(f))
         else:
             return str
 
     def rect(self, length, width, height, feedrate, origin, pitch):
-        result = ""
+        result = "[[comment:rect]]\n"
         pitch_x = length * (pitch / (2 * length + 2 * width))
         pitch_y = width * (pitch / (2 * length + 2 * width))
         z = origin[2]
-        result += "feed(" + self.atof(feedrate) + ")\n"
+        result += "[[feed(" + self.atof(feedrate) + ")]]\n"
         x0 = origin[0]
         x1 = origin[0] - length * 0.5
         x2 = origin[0] + length * 0.5
@@ -115,6 +141,30 @@ class Pypplang:
         result += self.atof(x0) + ","
         result += self.atof(y0) + ","
         result += self.atof(z) + ")]]\n"
+
+        result += "[[comment:/rect]]\n"
+
+        return result
+
+    def sphere(self, X, Y, Z, R, r, phi_1, phi_2, theta_1, theta_2,
+               clearance, retraction, gap, feedrate):
+        result = "[[comment:sphere]]\n"
+        x = X + (R + r + gap) * math.sin(theta_2) * math.cos(phi_1)
+        y = Y + (R + r + gap) * math.sin(theta_2) * math.sin(phi_1)
+
+        result += "[[feed(" + self.atof(feedrate) + ")]]\n"
+        result += "[[Line(" + self.atof(x) + ", "
+        result += self.atof(y) + ", "
+        result += self.atof(retraction) + ")]]\n"
+        result += "[[Line(,," + self.atof(clearance) + ")]]\n"
+
+        x = X + (R + r) * math.sin(theta_2) * math.cos(phi_1)
+        y = Y + (R + r) * math.sin(theta_2) * math.sin(phi_1)
+        result += "[[Line(" + self.atof(x) + ", "
+        result += self.atof(y) + ", )]]\n"
+
+        result += "[[comment:/sphere]]\n"
+
         return result
 
     def atof(self, num):
