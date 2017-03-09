@@ -46,11 +46,13 @@ class Pypplang:
                                    match).group(2)
             gap = re.search(r'''(gap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
             f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
+            step = re.search(r'''(step\s*=\s*(-?\d*\.?\d*))''',
+                             match).group(2)
             return self.sphere(float(X), float(Y), float(Z),
                                float(R), float(r), float(phi_1),
                                float(phi_2), float(theta_1), float(theta_2),
                                float(clearance), float(retraction),
-                               float(gap), float(f))
+                               float(gap), float(f), float(step))
         else:
             return str
 
@@ -147,21 +149,77 @@ class Pypplang:
         return result
 
     def sphere(self, X, Y, Z, R, r, phi_1, phi_2, theta_1, theta_2,
-               clearance, retraction, gap, feedrate):
-        result = "[[comment:sphere]]\n"
-        x = X + (R + r + gap) * math.sin(theta_2) * math.cos(phi_1)
-        y = Y + (R + r + gap) * math.sin(theta_2) * math.sin(phi_1)
+               clearance, retraction, gap, feedrate, step):
 
+        phi_1 = math.radians(phi_1)
+        phi_2 = math.radians(phi_2)
+        theta_1 = math.radians(theta_1)
+        theta_2 = math.radians(theta_2)
+
+        result = "[[comment:sphere]]\n"
+        x = X + (R + r + gap) * math.sin(theta_1) * math.cos(phi_1)
+        y = Y + (R + r + gap) * math.sin(theta_1) * math.sin(phi_1)
+        z = (R + r) * math.cos(theta_1) - r
+
+        # feedrate
         result += "[[feed(" + self.atof(feedrate) + ")]]\n"
-        result += "[[Line(" + self.atof(x) + ", "
+
+        # retraction plane
+        result += "[[Rapid(" + self.atof(x) + ", "
         result += self.atof(y) + ", "
         result += self.atof(retraction) + ")]]\n"
-        result += "[[Line(,," + self.atof(clearance) + ")]]\n"
 
-        x = X + (R + r) * math.sin(theta_2) * math.cos(phi_1)
-        y = Y + (R + r) * math.sin(theta_2) * math.sin(phi_1)
-        result += "[[Line(" + self.atof(x) + ", "
-        result += self.atof(y) + ", )]]\n"
+        # calculate number of steps in theta direction
+        n = math.ceil(abs(theta_1-theta_2)/step)
+        step_theta = abs(theta_1-theta_2)/n
+
+        # calculate number of steps in phi direction
+        m = math.ceil(abs(phi_1-phi_2)/step)
+        step_phi = abs(phi_1-phi_2)/m
+
+        for j in range(0, m+1):
+            # gap
+            x = (X + (R + r) * math.sin(theta_1) * \
+                math.cos(phi_1 + j * step_phi)) + \
+                gap * math.cos(phi_1 + j * step_phi)
+            y = Y + (R + r) * math.sin(theta_1) * \
+                math.sin(phi_1 + j * step_phi) + \
+                gap * math.sin(phi_1 + j * step_phi)
+            z = (R + r) * math.cos(theta_2) - r
+
+            result += "[[Rapid(" + self.atof(x) + ", "
+            result += self.atof(y) + ", )]]\n"
+
+            # z clearance plane
+            z = (R + r) * math.cos(theta_1) - r + clearance
+            result += "[[Rapid(,," + self.atof(z) + ")]]\n"
+            # z start plane
+            z = (R + r) * math.cos(theta_1) - r
+            result += "[[Line(,," + self.atof(z) + ")]]\n"
+
+            for i in range(0, n+1):
+                x = X + (R + r) * math.sin(theta_1-i*step_theta) * \
+                    math.cos(phi_1+j*step_phi)
+                y = Y + (R + r) * math.sin(theta_1-i*step_theta) * \
+                    math.sin(phi_1+j*step_phi)
+                z = (R + r) * math.cos(theta_1-i*step_theta) - r
+                result += "[[Line(" + self.atof(x) + ", "
+                result += self.atof(y) + ", "
+                result += self.atof(z) + ")]]\n"
+
+            # gap
+            x = X + (R + r) * math.sin(theta_1-i*step_theta) * \
+                math.cos(phi_1 + j * step_phi) - \
+                gap * math.cos(phi_1 + j * step_phi)
+            y = Y + (R + r) * math.sin(theta_1-i*step_theta) * \
+                math.sin(phi_1 + j * step_phi) - \
+                gap * math.sin(phi_1 + j * step_phi)
+            result += "[[Line(" + self.atof(x) + ", "
+            result += self.atof(y) + ", )]]\n"
+
+            # z clearance plane
+            # z = (R + r) * math.cos(theta_2) - r + clearance
+            result += "[[Rapid(,," + self.atof(retraction) + ")]]\n"
 
         result += "[[comment:/sphere]]\n"
 

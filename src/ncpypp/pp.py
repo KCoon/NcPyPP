@@ -10,6 +10,7 @@
 
 from ncpypp.parameter import Parameter
 from ncpypp.languages.pypplang import Pypplang
+import os
 
 
 class PP:
@@ -20,7 +21,8 @@ class PP:
         self.t = Pypplang()
 
         self.input = file
-        self.output = self.input + '.out'
+        filename, file_extension = os.path.splitext(file)
+        self.output = filename + '.gcode'
         self.temp = self.input + '.tmp'
 
     def parse(self):
@@ -28,7 +30,8 @@ class PP:
             with open(self.output, 'w') as output:
                 with open(self.input, 'r') as input:
                     l = ''
-                    output.write(self.o.id_ + '\n')
+
+                    output.write("(" + self.o.id_ + ')\n')
                     for line in input:
                         l += line.strip()
                         if l.startswith("[[") and not l.endswith("]]"):

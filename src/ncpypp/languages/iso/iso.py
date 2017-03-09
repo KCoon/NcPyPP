@@ -37,6 +37,13 @@ class Language(object):
             self.write_feed = True
             return ""
 
+        # rapid movement G0
+        match_rapid = re.search(r'rapid\((-?\d*\.?\d*)\s*,\s*'
+                                r'(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
+                                str, re.IGNORECASE)
+        if match_rapid is not None:
+            return self.rapid(match_rapid.group(1), match_rapid.group(2),
+                             match_rapid.group(3))
         # linear movement G1
         match_line = re.search(r'line\((-?\d*\.?\d*)\s*,\s*'
                                r'(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
@@ -73,6 +80,16 @@ officia deserunt mollit anim id est laborum.""" + '\n'
         result += feed + "\n"
         return result
 
+    def rapid(self, x, y, z):
+        result = "G0"
+        if x:
+            result += " X" + str(x)
+        if y:
+            result += " Y" + str(y)
+        if z:
+            result += " Z" + str(z)
+        result += "\n"
+        return result
 
 class Instance(Language):
     pass
