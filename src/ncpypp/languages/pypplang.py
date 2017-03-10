@@ -159,7 +159,7 @@ class Pypplang:
         result = "[[comment:sphere]]\n"
         x = X + (R + r + gap) * math.sin(theta_1) * math.cos(phi_1)
         y = Y + (R + r + gap) * math.sin(theta_1) * math.sin(phi_1)
-        z = (R + r) * math.cos(theta_1) - r
+        z = Z + (R + r) * math.cos(theta_1) - r
 
         # feedrate
         result += "[[feed(" + self.atof(feedrate) + ")]]\n"
@@ -185,16 +185,16 @@ class Pypplang:
             y = Y + (R + r) * math.sin(theta_1) * \
                 math.sin(phi_1 + j * step_phi) + \
                 gap * math.sin(phi_1 + j * step_phi)
-            z = (R + r) * math.cos(theta_2) - r
+            z = Z + (R + r) * math.cos(theta_2) - r
 
             result += "[[Rapid(" + self.atof(x) + ", "
             result += self.atof(y) + ", )]]\n"
 
             # z clearance plane
-            z = (R + r) * math.cos(theta_1) - r + clearance
+            z = Z + (R + r) * math.cos(theta_1) - r + clearance
             result += "[[Rapid(,," + self.atof(z) + ")]]\n"
             # z start plane
-            z = (R + r) * math.cos(theta_1) - r
+            z = Z + (R + r) * math.cos(theta_1) - r
             result += "[[Line(,," + self.atof(z) + ")]]\n"
 
             for i in range(0, n+1):
@@ -202,7 +202,7 @@ class Pypplang:
                     math.cos(phi_1+j*step_phi)
                 y = Y + (R + r) * math.sin(theta_1-i*step_theta) * \
                     math.sin(phi_1+j*step_phi)
-                z = (R + r) * math.cos(theta_1-i*step_theta) - r
+                z = Z + (R + r) * math.cos(theta_1-i*step_theta) - r
                 result += "[[Line(" + self.atof(x) + ", "
                 result += self.atof(y) + ", "
                 result += self.atof(z) + ")]]\n"
