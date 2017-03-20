@@ -7,6 +7,9 @@ class Pypplang:
     def __init__(self):
         self.id = 'pypplang'
         self.digits = "{0:.3f}"
+        self.x = 0.0
+        self.y = 0.0
+        self.z = 0.0
 
     def expand(self, str):
         match = re.search(r'''^\[\[(.*)\]\]''', str)
@@ -53,6 +56,45 @@ class Pypplang:
                                float(phi_2), float(theta_1), float(theta_2),
                                float(clearance), float(retraction),
                                float(gap), float(f), float(step))
+
+        elif match.startswith("cylinder:"):
+            X = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            R = re.search(r'''(r_1\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_2\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1\s*=\s*(-?\d*\.?\d*))''',
+                              match).group(2)
+            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+                                  match).group(2)
+            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+                                   match).group(2)
+            gap = re.search(r'''(gap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
+            return self.cylinder(float(X), float(Y), float(Z), float(H),
+                                 float(R), float(r), float(phi_1), float(1),
+                                 float(clearance), float(retraction),
+                                 float(gap), float(f))
+
+        elif match.startswith("bore:"):
+            X = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            R = re.search(r'''(r_1\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_2\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1\s*=\s*(-?\d*\.?\d*))''',
+                              match).group(2)
+            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+                                  match).group(2)
+            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+                                   match).group(2)
+            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
+            return self.bore(float(X), float(Y), float(Z), float(H),
+                                 float(R), float(r), float(phi_1), float(1),
+                                 float(clearance), float(retraction),
+                                 float(f))
         else:
             return str
 
@@ -148,6 +190,143 @@ class Pypplang:
 
         return result
 
+    def bore(self, X, Y, Z, H, R, r, phi_1, pitch,
+             clearance, retraction, feedrate):
+
+        phi_1 = math.radians(phi_1)
+
+        result = "[[comment:bore]]\n"
+
+        x = X + (R - r) * \
+            math.cos(phi_1)
+        y = Y + (R - r) * \
+            math.sin(phi_1)
+
+        # feedrate
+        result += "[[feed(" + self.atof(feedrate) + ")]]\n"
+
+        # retraction plane
+        result += "[[Rapid(" + self.atof(x) + ", "
+        result += self.atof(y) + ", "
+        result += self.atof(retraction) + ")]]\n"
+
+        x = X + (R - r) * \
+            math.cos(phi_1)
+        y = Y + (R - r) * \
+            math.sin(phi_1)
+        result += "[[Rapid(" + self.atof(x) + ", "
+        result += self.atof(y) + ", )]]\n"
+
+        # gap
+        z = Z + clearance
+
+        result += "[[Rapid(,," + self.atof(z) + ")]]\n"
+
+        # z start plane
+        result += "[[Line(,," + self.atof(Z) + ")]]\n"
+
+
+        n = math.ceil(H / pitch)
+        pitch = H / n
+
+        for j in range(1, n + 1):
+            result += "[[Circle(" + self.atof(x) + ", "
+            result += self.atof(y) + ", "
+            result += self.atof(Z-j*pitch) + ", "
+            result += self.atof(X) + ", "
+            result += self.atof(Y) + ", ccw)]]\n"
+
+        result += "[[Circle(" + self.atof(x) + ", "
+        result += self.atof(y) + ", "
+        result += self.atof(Z-j*pitch) + ", "
+        result += self.atof(X) + ", "
+        result += self.atof(Y) + ", ccw)]]\n"
+
+        # semicircle departure
+        x2 = X + (R - r - 0.1 * (R - r)) * \
+            math.cos(phi_1 + math.pi)
+        y2 = Y + (R - r - 0.1 * (R - r)) * \
+            math.sin(phi_1 + math.pi)
+        result += "[[Circle(" + self.atof(x2) + ", "
+        result += self.atof(y2) + ", "
+        result += self.atof(Z-j*pitch) + ", "
+        result += self.atof(x + 0.5 * (x2 - x)) + ", "
+        result += self.atof(y + 0.5 * (y2 - y)) + ", ccw)]]\n"
+
+        # retraction plane
+        result += "[[Rapid(" + ", , "
+        result += self.atof(retraction) + ")]]\n"
+
+        result += "[[comment:/cylinder]]\n"
+        return result
+
+
+    def cylinder(self, X, Y, Z, H, R, r, phi_1, pitch,
+                 clearance, retraction, gap, feedrate):
+
+        phi_1 = math.radians(phi_1)
+
+        result = "[[comment:cylinder]]\n"
+
+        # feedrate
+        result += "[[feed(" + self.atof(feedrate) + ")]]\n"
+
+        x = X + (R + r) * \
+            math.cos(phi_1) + \
+            gap * math.cos(phi_1 - math.pi * 0.5)
+        y = Y + (R + r) * \
+            math.sin(phi_1) + \
+            gap * math.sin(phi_1 - math.pi * 0.5)
+
+        # retraction plane
+        result += "[[Rapid(" + self.atof(x) + ", "
+        result += self.atof(y) + ", "
+        result += self.atof(retraction) + ")]]\n"
+
+        # gap
+        z = Z + clearance
+
+        result += "[[Rapid(,," + self.atof(z) + ")]]\n"
+
+        # z start plane
+        result += "[[Line(,," + self.atof(Z) + ")]]\n"
+
+        x = X + (R + r) * \
+            math.cos(phi_1)
+        y = Y + (R + r) * \
+            math.sin(phi_1)
+        result += "[[Line(" + self.atof(x) + ", "
+        result += self.atof(y) + ", )]]\n"
+
+        n = math.ceil(H / pitch)
+        pitch = H / n
+
+        for j in range(1, n + 1):
+            result += "[[Circle(" + self.atof(x) + ", "
+            result += self.atof(y) + ", "
+            result += self.atof(Z-j*pitch) + ", "
+            result += self.atof(X) + ", "
+            result += self.atof(Y) + ", ccw)]]\n"
+
+        result += "[[Circle(" + self.atof(x) + ", "
+        result += self.atof(y) + ", "
+        result += self.atof(Z-j*pitch) + ", "
+        result += self.atof(X) + ", "
+        result += self.atof(Y) + ", ccw)]]\n"
+
+        x = X + (R + r) * \
+            math.cos(phi_1) + \
+            gap * math.cos(phi_1 + math.pi * 0.5)
+        y = Y + (R + r) * \
+            math.sin(phi_1) + \
+            gap * math.sin(phi_1 + math.pi * 0.5)
+
+        result += "[[Line(" + self.atof(x) + ", "
+        result += self.atof(y) + ", )]]\n"
+
+        result += "[[comment:/cylinder]]\n"
+        return result
+
     def sphere(self, X, Y, Z, R, r, phi_1, phi_2, theta_1, theta_2,
                clearance, retraction, gap, feedrate, step):
 
@@ -179,9 +358,9 @@ class Pypplang:
 
         for j in range(0, m+1):
             # gap
-            x = (X + (R + r) * math.sin(theta_1) * \
-                math.cos(phi_1 + j * step_phi)) + \
-                gap * math.cos(phi_1 + j * step_phi)
+            x = (X + (R + r) * math.sin(theta_1) *
+                 math.cos(phi_1 + j * step_phi)) + \
+                 gap * math.cos(phi_1 + j * step_phi)
             y = Y + (R + r) * math.sin(theta_1) * \
                 math.sin(phi_1 + j * step_phi) + \
                 gap * math.sin(phi_1 + j * step_phi)

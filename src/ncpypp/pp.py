@@ -8,9 +8,9 @@
 @copyright: Sven Langer
 '''
 
+import os
 from ncpypp.parameter import Parameter
 from ncpypp.languages.pypplang import Pypplang
-import os
 
 
 class PP:
@@ -34,10 +34,14 @@ class PP:
                     output.write("(" + self.o.id_ + ')\n')
                     for line in input:
                         l += line.strip()
+                        if l.startswith("/"):
+                            l = ""
+                            continue
                         if l.startswith("[[") and not l.endswith("]]"):
                             continue
                         # remove numbers
                         s = self.o.remove_numbers(l)
+                        s = self.o.to_pypplang(s)
                         # expand macro
                         s = self.t.expand(s)
                         temp.write(s)
