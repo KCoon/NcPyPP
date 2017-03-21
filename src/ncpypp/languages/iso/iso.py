@@ -5,6 +5,7 @@ import re
 class Language(object):
 
     def __init__(self):
+        self.digits = "{0:.3f}"
         self.id_ = 'iso'
         self.write_feed = False
         self.feed = 0
@@ -63,7 +64,7 @@ class Language(object):
         match_feed = re.search(r'''^\[\[(feed\((\d*)\))\]\]''',
                                str, re.IGNORECASE)
         if match_feed is not None:
-            self.feed = match_feed.group(2)
+            self.feed = float(match_feed.group(2))
             self.write_feed = True
             return ""
 
@@ -77,12 +78,20 @@ class Language(object):
             z = match_rapid.group(3)
             if x is not "":
                 self.x = float(x)
+                x = float(x)
+            else:
+                x = None
             if y is not "":
                 self.y = float(y)
+                y = float(y)
+            else:
+                y = None
             if z is not "":
                 self.z = float(z)
-            return self.rapid(match_rapid.group(1), match_rapid.group(2),
-                              match_rapid.group(3))
+                z = float(z)
+            else:
+                z = None
+            return self.rapid(x, y, z)
         # linear movement G1
         match_line = re.search(r'''line\((-?\d*\.?\d*)\s*,\s*'''
                                r'''(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
@@ -93,12 +102,20 @@ class Language(object):
             z = match_line.group(3)
             if x is not "":
                 self.x = float(x)
+                x = float(x)
+            else:
+                x = None
             if y is not "":
                 self.y = float(y)
+                y = float(y)
+            else:
+                y = None
             if z is not "":
                 self.z = float(z)
-            return self.line(match_line.group(1), match_line.group(2),
-                             match_line.group(3))
+                z = float(z)
+            else:
+                z = None
+            return self.line(x, y, z)
 
         # polar movement G2/G3
         match_circle = re.search(r'''circle\((-?\d*\.?\d*)\s*,\s*'''
@@ -129,27 +146,27 @@ officia deserunt mollit anim id est laborum.""" + '\n'
     def line(self, x, y, z):
         feed = ""
         if self.write_feed:
-            feed = " F" + str(self.feed)
+            feed = " F" + self.atof(self.feed)
             self.write_feed = False
 
         result = "G1"
-        if x:
-            result += " X" + str(x)
-        if y:
-            result += " Y" + str(y)
-        if z:
-            result += " Z" + str(z)
+        if x is not None:
+            result += " X" + self.atof(x)
+        if y is not None:
+            result += " Y" + self.atof(y)
+        if z is not None:
+            result += " Z" + self.atof(z)
         result += feed + "\n"
         return result
 
     def rapid(self, x, y, z):
         result = "G0"
-        if x:
-            result += " X" + str(x)
-        if y:
-            result += " Y" + str(y)
-        if z:
-            result += " Z" + str(z)
+        if x is not None:
+            result += " X" + self.atof(x)
+        if y is not None:
+            result += " Y" + self.atof(y)
+        if z is not None:
+            result += " Z" + self.atof(z)
         result += "\n"
         return result
 
@@ -159,12 +176,15 @@ officia deserunt mollit anim id est laborum.""" + '\n'
             result = "G2"
         elif direction == "ccw":
             result = "G3"
-        result += " X" + str(x)
-        result += " Y" + str(y)
-        result += " Z" + str(z)
-        result += " I" + str(i-self.x)
-        result += " J" + str(j-self.y) + "\n"
+        result += " X" + self.atof(x)
+        result += " Y" + self.atof(y)
+        result += " Z" + self.atof(z)
+        result += " I" + self.atof(i-self.x)
+        result += " J" + self.atof(j-self.y) + "\n"
         return result
+
+    def atof(self, num):
+        return self.digits.format(num).rstrip('0').rstrip('.')
 
 
 class Instance(Language):

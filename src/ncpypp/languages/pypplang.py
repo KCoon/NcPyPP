@@ -6,7 +6,7 @@ class Pypplang:
 
     def __init__(self):
         self.id = 'pypplang'
-        self.digits = "{0:.3f}"
+        self.digits = "{0:.5f}"
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0
@@ -95,6 +95,27 @@ class Pypplang:
                                  float(R), float(r), float(phi_1), float(1),
                                  float(clearance), float(retraction),
                                  float(f))
+
+        elif match.startswith("polybore:"):
+            X = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            R = re.search(r'''(r_1\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_2\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1\s*=\s*(-?\d*\.?\d*))''',
+                              match).group(2)
+            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+                                  match).group(2)
+            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+                                   match).group(2)
+            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
+            failure = re.search(r'''(failure\s*=\s*(-?\d*\.?\d*))''',
+                                match).group(2)
+            return self.polybore(float(X), float(Y), float(Z), float(H),
+                                 float(R), float(r), float(phi_1), float(1),
+                                 float(clearance), float(retraction),
+                                 float(f), float(failure))
         else:
             return str
 
@@ -225,7 +246,7 @@ class Pypplang:
         # z start plane
         result += "[[Line(,," + self.atof(Z) + ")]]\n"
 
-
+        # number of revolusions
         n = math.ceil(H / pitch)
         pitch = H / n
 
@@ -243,9 +264,9 @@ class Pypplang:
         result += self.atof(Y) + ", ccw)]]\n"
 
         # semicircle departure
-        x2 = X + (R - r - 0.1 * (R - r)) * \
+        x2 = X + (R - r - 0.4 * (R - r)) * \
             math.cos(phi_1 + math.pi)
-        y2 = Y + (R - r - 0.1 * (R - r)) * \
+        y2 = Y + (R - r - 0.4 * (R - r)) * \
             math.sin(phi_1 + math.pi)
         result += "[[Circle(" + self.atof(x2) + ", "
         result += self.atof(y2) + ", "
@@ -257,9 +278,97 @@ class Pypplang:
         result += "[[Rapid(" + ", , "
         result += self.atof(retraction) + ")]]\n"
 
-        result += "[[comment:/cylinder]]\n"
+        result += "[[comment:/bore]]\n"
         return result
 
+    def polybore(self, X, Y, Z, H, R, r, phi_1, pitch,
+                 clearance, retraction, feedrate, failure):
+
+        print('polybore')
+        phi_1 = math.radians(phi_1)
+
+        result = "[[comment:polybore]]\n"
+
+        x = X + (R - r) * \
+            math.cos(phi_1)
+        y = Y + (R - r) * \
+            math.sin(phi_1)
+
+        # feedrate
+        result += "[[feed(" + self.atof(feedrate) + ")]]\n"
+
+        # retraction plane
+        result += "[[Rapid(" + self.atof(x) + ", "
+        result += self.atof(y) + ", "
+        result += self.atof(retraction) + ")]]\n"
+
+        x = X + (R - r) * \
+            math.cos(phi_1)
+        y = Y + (R - r) * \
+            math.sin(phi_1)
+        result += "[[Rapid(" + self.atof(x) + ", "
+        result += self.atof(y) + ", )]]\n"
+
+        # gap
+        z = Z + clearance
+
+        result += "[[Rapid(,," + self.atof(z) + ")]]\n"
+
+        # z start plane
+        z = Z
+        result += "[[Line(,," + self.atof(z) + ")]]\n"
+
+        n = math.ceil(H / pitch)
+        pitch = H / n
+
+        phi_max = 2 * math.acos(-failure/(R-r)+1)
+        # number of steps per revolusion
+        m = math.ceil(2 * math.pi / phi_max)
+        phi = 2 * math.pi / m
+        # pitch per increment
+        dpitch = pitch / m
+        print('pitch', pitch)
+        print('m',m)
+        print('dpitch', dpitch)
+
+        for j in range(1, n + 1):
+            for i in range(1, m+1):
+                x = X + (R-r) * math.cos(phi_1 + phi*i)
+                y = Y + (R-r) * math.sin(phi_1 + phi*i)
+                z = z - dpitch
+                result += "[[Line(" + self.atof(x) + ", "
+                result += self.atof(y) + ", "
+                result += self.atof(z) + ")]]\n"
+
+        for i in range(1, m+1):
+            x = X + (R-r) * math.cos(phi*i)
+            y = Y + (R-r) * math.sin(phi*i)
+            result += "[[Line(" + self.atof(x) + ", "
+            result += self.atof(y) + ", )]]\n"
+
+        # semicircle departure
+        x = X + (R - r) * \
+            math.cos(phi_1)
+        y = Y + (R - r) * \
+            math.sin(phi_1)
+        x2 = X + (R - r - 0.4 * (R - r)) * \
+             math.cos(phi_1 + math.pi)
+        y2 = Y + (R - r - 0.4 * (R - r)) * \
+             math.sin(phi_1 + math.pi)
+        X2 = x + 0.5 * (x2 - x)
+        Y2 = y + 0.5 * (y2 - y)
+        for i in range(1, math.ceil(0.5 * (m+1))):
+            x = X2 + (R-r - 0.2*(R-r)) * math.cos(phi*i)
+            y = Y2 + (R-r - 0.2*(R-r)) * math.sin(phi*i)
+            result += "[[Line(" + self.atof(x) + ", "
+            result += self.atof(y) + ", )]]\n"
+
+        # retraction plane
+        result += "[[Rapid(" + ", , "
+        result += self.atof(retraction) + ")]]\n"
+
+        result += "[[comment:/polybore]]\n"
+        return result
 
     def cylinder(self, X, Y, Z, H, R, r, phi_1, pitch,
                  clearance, retraction, gap, feedrate):
