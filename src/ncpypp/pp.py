@@ -37,7 +37,7 @@ class PP:
                         if l.startswith("/"):
                             l = ""
                             continue
-                        if l.startswith("[[") and not l.endswith("]]"):
+                        if l.startswith("[[") and l.count('[') != l.count(']'):
                             continue
                         # remove numbers
                         s = self.o.remove_numbers(l)

@@ -18,22 +18,22 @@ class Language(object):
         return match.group(2) + '\n'
 
     def to_pypplang(self, str):
-        match = re.search(r'''G1(\s*[XYZ]\d*\.?\d*\s*){1,3}''',
+        match = re.search(r'''G1(\s*[XYZ]-?\d*\.?\d*\s*){1,3}''',
                           str, re.IGNORECASE)
         if match is not None:
-            x = re.search(r'''X(\d*\.?\d*)''', str, re.IGNORECASE)
+            x = re.search(r'''X(-?\d*\.?\d*)''', str, re.IGNORECASE)
             if x is not None:
                 x = x.group(1)
             else:
                 x = ""
 
-            y = re.search(r'''Y(\d*\.?\d*)''', str, re.IGNORECASE)
+            y = re.search(r'''Y(-?\d*\.?\d*)''', str, re.IGNORECASE)
             if y is not None:
                 y = y.group(1)
             else:
                 y = ""
 
-            z = re.search(r'''Z(\d*\.?\d*)''', str, re.IGNORECASE)
+            z = re.search(r'''Z(-?\d*\.?\d*)''', str, re.IGNORECASE)
             if z is not None:
                 z = z.group(1)
             else:

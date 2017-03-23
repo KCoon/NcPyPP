@@ -1,5 +1,7 @@
 import re
 import math
+import numpy as np
+
 
 
 class Pypplang:
@@ -116,6 +118,30 @@ class Pypplang:
                                  float(R), float(r), float(phi_1), float(1),
                                  float(clearance), float(retraction),
                                  float(f), float(failure))
+
+        elif match.startswith("contour:"):
+            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            ap = re.search(r'''(ap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+                                  match).group(2)
+            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+                                   match).group(2)
+            gap = re.search(r'''(gap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
+            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
+            contour_match = re.finditer(r'''(line\(-?\d*\.?\d*,\s*'''
+                                        r'''-?\d*\.?\d*,\s*'''
+                                        r'''-?\d*\.?\d*\)|'''
+                                        r'''circle\(-?\d*\.?\d*,\s*'''
+                                        r'''-?\d*\.?\d*,\s*-?\d*'''
+                                        r'''\.?\d*,\s*-?\d*\.?\d*,'''
+                                        r'''(cw|ccw)\))''', match)
+            return self.contour(float(Z), float(H), float(r),
+                                float(ap), float(clearance),
+                                float(retraction), float(gap),
+                                float(f), contour_match)
+
         else:
             return str
 
@@ -284,7 +310,6 @@ class Pypplang:
     def polybore(self, X, Y, Z, H, R, r, phi_1, pitch,
                  clearance, retraction, feedrate, failure):
 
-        print('polybore')
         phi_1 = math.radians(phi_1)
 
         result = "[[comment:polybore]]\n"
@@ -327,9 +352,6 @@ class Pypplang:
         phi = 2 * math.pi / m
         # pitch per increment
         dpitch = pitch / m
-        print('pitch', pitch)
-        print('m',m)
-        print('dpitch', dpitch)
 
         for j in range(1, n + 1):
             for i in range(1, m+1):
@@ -510,6 +532,145 @@ class Pypplang:
             result += "[[Rapid(,," + self.atof(retraction) + ")]]\n"
 
         result += "[[comment:/sphere]]\n"
+
+        return result
+
+    def contour(self, Z, H, r, ap, clearance, retraction,
+                gap, feedrate, contour):
+
+        # list with points of contour
+        points = []
+
+        result = "[[comment:contour]]\n"
+
+        # feedrate
+        result += "[[feed(" + self.atof(feedrate) + ")]]\n"
+
+        line_start = re.search(r'''line\((-?\d*\.?\d*)\s*,\s*'''
+                               r'''(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
+                               contour.__next__().group(1), re.IGNORECASE)
+        line_end = re.search(r'''line\((-?\d*\.?\d*)\s*,\s*'''
+                             r'''(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
+                             contour.__next__().group(1), re.IGNORECASE)
+
+        x0 = float(line_start.group(1))
+        y0 = float(line_start.group(2))
+        x1 = float(line_end.group(1))
+        y1 = float(line_end.group(2))
+
+        # first vertex
+        # direction vector
+        x10 = x1 - x0
+        y10 = y1 - y0
+        # rotate 90deg
+        x10n = y10
+        y10n = -x10
+        # normalize
+        x10n = x10n / math.sqrt(x10n**2 + y10n**2)
+        y10n = y10n / math.sqrt(x10n**2 + y10n**2)
+        # scale distance
+        x0T = x0 + (x10n * r)
+        y0T = y0 + (y10n * r)
+        x1T = x1 + (x10n * r)
+        y1T = y1 + (y10n * r)
+
+        # start point
+        # direction vector
+        x10T = x0T - x1T
+        y10T = y0T - y1T
+        # normalize
+        x10Tn = x10T / math.sqrt(x10T**2 + y10T**2)
+        y10Tn = y10T / math.sqrt(x10T**2 + y10T**2)
+        # scale distance
+        x_start = x0T + (x10Tn * (r+gap))
+        y_start = y0T + (y10Tn * (r+gap))
+
+        points.append([x_start, y_start])
+
+        for m in contour:
+            # copy last point to start point
+            x2 = x1
+            y2 = y1
+            # read next line
+            line = re.search(r'''line\((-?\d*\.?\d*)\s*,\s*'''
+                             r'''(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
+                             m.group(1), re.IGNORECASE)
+            x3 = float(line.group(1))
+            y3 = float(line.group(2))
+
+            # direction vector
+            x23 = x3 - x2
+            y23 = y3 - y2
+            # rotate 90deg
+            x23n = y23
+            y23n = -x23
+            # normalize
+            x23n = x23n / math.sqrt(x23n**2 + y23n**2)
+            y23n = y23n / math.sqrt(x23n**2 + y23n**2)
+            # scale distance
+            x2T = x2 + (x23n * r)
+            y2T = y2 + (y23n * r)
+            x3T = x3 + (x23n * r)
+            y3T = y3 + (y23n * r)
+            # find intersection
+            Px = ((x0T*y1T-y0T*x1T)*(x2T-x3T)-(x0T-x1T)*(x2T*y3T-y2T*x3T))/ \
+                 ((x0T-x1T)*(y2T-y3T)-(y0T-y1T)*(x2T-x3T))
+            Py = ((x0T*y1T-y0T*x1T)*(y2T-y3T)-(y0T-y1T)*(x2T*y3T-y2T*x3T))/ \
+                 ((x0T-x1T)*(y2T-y3T)-(y0T-y1T)*(x2T-x3T))
+            # write line
+            points.append([Px, Py])
+            x0 = x2
+            x0T = x2T
+            y0 = y2
+            y0T = y2T
+            x1 = x3
+            x1T = x3T
+            y1 = y3
+            y1T = y3T
+
+        # end point
+        # direction vector
+        x01T = x1T - x0T
+        y01T = y1T - y0T
+        # normalize
+        x01Tn = x01T / math.sqrt(x01T**2 + y01T**2)
+        y01Tn = y01T / math.sqrt(x01T**2 + y01T**2)
+        # scale distance
+        x_end = x1T + (x01Tn * gap)
+        y_end = y1T + (y01Tn * gap)
+
+        points.append([x_end, y_end])
+
+        n = math.ceil(H / ap)
+        ap = H / n
+
+        z = Z
+        for i in range(0, n):
+            z = z - ap
+            # start
+            # retraction plane
+            result += "[[Rapid(" + self.atof(points[0][0]) + ", "
+            result += self.atof(points[0][1]) + ", "
+            result += self.atof(retraction) + ")]]\n"
+
+            # gap
+            result += "[[Rapid(,," + self.atof(z + clearance) + ")]]\n"
+
+            # z
+            result += "[[Line(,," + self.atof(z) + ")]]\n"
+
+            # contour
+            for p in points[1:]:
+                result += "[[Line(" + self.atof(p[0]) + ", "
+                result += self.atof(p[1]) + ", )]]\n"
+
+            # end
+            # clearance
+            result += "[[Line(,," + self.atof(z + clearance) + ")]]\n"
+            # retraction plane
+            result += "[[Rapid(,," + self.atof(retraction) + ")]]\n"
+
+        result += "[[comment:/contour]]\n"
 
         return result
 
