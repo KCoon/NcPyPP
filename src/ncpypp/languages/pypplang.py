@@ -645,12 +645,20 @@ class Pypplang:
 
             # if segment is circle
             if type_ == 1:
-                # direction 1 to centre
-                x1c = cx - x1
-                y1c = cy - y1
-                # direction 2 to centre
-                x2c = cx - x2
-                y2c = cy - y2
+                if dir_ == 'cw':
+                    # direction 1 to centre
+                    x1c = cx - x1
+                    y1c = cy - y1
+                    # direction 2 to centre
+                    x2c = cx - x2
+                    y2c = cy - y2
+                elif dir_ == 'ccw':
+                    # direction 1 to centre
+                    x1c = x1 - cx
+                    y1c = y1 - cy
+                    # direction 2 to centre
+                    x2c = x2 - cx
+                    y2c = y2 - cy
                 # normalize
                 x1T_2 = x1 + ((x1c * r) / math.sqrt(x1c**2 + y1c**2))
                 y1T_2 = y1 + ((y1c * r) / math.sqrt(x1c**2 + y1c**2))

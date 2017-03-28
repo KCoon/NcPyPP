@@ -18,6 +18,20 @@ retraction=5
 F=2000
 ]]
 [[contour:
+Z=-5
+H=1
+r=0.5
+ap=0.4
+clearance=2
+retraction=5
+gap=1
+F=2000
+[[Line(0, 0,)]]
+[[Line(5, 0, )]]
+[[circle(7, 2, , 5, 2, ccw)]]
+[[Line(7, 5, )]]
+]]
+[[contour:
 Z=-14
 H=2.5
 r=0.5
