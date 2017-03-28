@@ -146,12 +146,6 @@ class Language(object):
                                float(X),
                                float(Y),
                                match_circle.group(6))
-            if x is not None:
-                self.x = x
-            if y is not None:
-                self.y = y
-            if z is not None:
-                self.z = z
 
         return str
 
@@ -206,6 +200,14 @@ officia deserunt mollit anim id est laborum.""" + '\n'
             result += " Z" + self.atof(z)
         result += " I" + self.atof(i-self.x)
         result += " J" + self.atof(j-self.y) + "\n"
+
+        if x is not None:
+            self.x = x
+        if y is not None:
+            self.y = y
+        if z is not None:
+            self.z = z
+
         return result
 
     def atof(self, num):

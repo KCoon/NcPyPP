@@ -694,22 +694,19 @@ class Pypplang:
                     Sx = x1T
                     Sy = y1T
                 else:
-                    print(x0T, y0T)
-                    print(x1T, y1T)
-                    print(x1T_2, y1T_2)
-                    print(x1T_2T, y1T_2T)
                     Sx, Sy = intersect(x0T, y0T, x1T, y1T,
                                        x1T_2, y1T_2, x1T_2T, y1T_2T)
 
             # write segment
-            if last_type == 0:
-                if type_ == 0:
+            # if last_type == 0:
+            if type_ == 0:
+                points.append([0, Sx, Sy])
+            if type_ == 1:
+                if last_type == 0:
                     points.append([0, Sx, Sy])
-                if type_ == 1:
-                    points.append([0, Sx, Sy])
-                    if abs(Sx-x1T_2)>0.002 and abs(Sy-y1T_2)>0.002:
-                        points.append([0, x1T_2, y1T_2])
-                    points.append([1, x2T, y2T, cx, cy, dir_])
+                if abs(Sx-x1T_2)>0.002 and abs(Sy-y1T_2)>0.002:
+                    points.append([0, x1T_2, y1T_2])
+                points.append([1, x2T, y2T, cx, cy, dir_])
 
             # copy points for next itteration
             if type_ == 0:
@@ -771,7 +768,7 @@ class Pypplang:
                     result += self.atof(p[2]) + ", ,"
                     result += self.atof(p[3]) + ", "
                     result += self.atof(p[4]) + ", "
-                    result += dir_ + ")]]\n"
+                    result += p[5] + ")]]\n"
 
             # end
             # clearance
