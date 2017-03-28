@@ -136,6 +136,7 @@ class Pypplang:
             retraction = re.search(r'''(retraction=(-?\d*\.?\d*))''',
                                    match).group(2)
             gap = re.search(r'''(gap=(-?\d*\.?\d*))''', match).group(2)
+            side = re.search(r'''(side=(left|right))''', match).group(2)
             f = re.search(r'''(f=(-?\d*))''', match).group(2)
             contour_match = re.finditer(r'''(line\(-?\d*\.?\d*,'''
                                         r'''-?\d*\.?\d*,'''
@@ -150,7 +151,7 @@ class Pypplang:
             return self.contour(float(Z), float(H), float(r),
                                 float(ap), float(clearance),
                                 float(retraction), float(gap),
-                                float(f), contour_match)
+                                side, float(f), contour_match)
 
         else:
             return str
@@ -546,7 +547,7 @@ class Pypplang:
         return result
 
     def contour(self, Z, H, r, ap, clearance, retraction,
-                gap, feedrate, contour):
+                gap, side, feedrate, contour):
 
         # list with points of contour
         points = []
@@ -572,8 +573,12 @@ class Pypplang:
 
         # first vertex
         # direction vector
-        x10 = x1 - x0
-        y10 = y1 - y0
+        if side == 'right':
+            x10 = x1 - x0
+            y10 = y1 - y0
+        elif side == 'left':
+            x10 = x0 - x1
+            y10 = y0 - y1
         # rotate 90deg
         x10n = y10
         y10n = -x10
@@ -632,8 +637,12 @@ class Pypplang:
             # if segment is line
             if type_ == 0:
                 # direction vector
-                x12 = x2 - x1
-                y12 = y2 - y1
+                if side == "right":
+                    x12 = x2 - x1
+                    y12 = y2 - y1
+                elif side == "left":
+                    x12 = x1 - x2
+                    y12 = y1 - y2
                 # rotate 90deg
                 x12n = y12
                 y12n = -x12
@@ -645,14 +654,15 @@ class Pypplang:
 
             # if segment is circle
             if type_ == 1:
-                if dir_ == 'cw':
+                if (side == 'right' and dir_ == 'cw') or \
+                   (side == 'left' and dir_ == 'ccw'):
                     # direction 1 to centre
                     x1c = cx - x1
                     y1c = cy - y1
                     # direction 2 to centre
                     x2c = cx - x2
                     y2c = cy - y2
-                elif dir_ == 'ccw':
+                else:
                     # direction 1 to centre
                     x1c = x1 - cx
                     y1c = y1 - cy
