@@ -2,7 +2,13 @@ import re
 import math
 import numpy as np
 
-
+def intersect(x1, y1, x2, y2, x3, y3, x4, y4):
+    div_ = ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4))
+    Sx = ((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) / \
+         div_
+    Sy = ((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4)) / \
+         div_
+    return Sx, Sy
 
 class Pypplang:
 
@@ -18,40 +24,41 @@ class Pypplang:
         if match is None:
             return str
         match = match.group(1).lower()
+        match = match.replace(" ", "")
         if match.startswith("rect:"):
-            x = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', str).group(2)
-            y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', str).group(2)
-            z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', str).group(2)
-            l = re.search(r'''(l\s*=\s*(-?\d*\.?\d*))''', str).group(2)
-            w = re.search(r'''(w\s*=\s*(-?\d*\.?\d*))''', str).group(2)
-            h = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', str).group(2)
-            p = re.search(r'''(p\s*=\s*(-?\d*\.?\d*))''', str).group(2)
-            f = re.search(r'''(f\s*=\s*(-?\d*))''', str).group(2)
+            x = re.search(r'''(x=(-?\d*\.?\d*))''', str).group(2)
+            y = re.search(r'''(y=(-?\d*\.?\d*))''', str).group(2)
+            z = re.search(r'''(z=(-?\d*\.?\d*))''', str).group(2)
+            l = re.search(r'''(l=(-?\d*\.?\d*))''', str).group(2)
+            w = re.search(r'''(w=(-?\d*\.?\d*))''', str).group(2)
+            h = re.search(r'''(h=(-?\d*\.?\d*))''', str).group(2)
+            p = re.search(r'''(p=(-?\d*\.?\d*))''', str).group(2)
+            f = re.search(r'''(f=(-?\d*))''', str).group(2)
             return self.rect(float(l), float(w), float(h),
                              float(f),
                              [float(x), float(y), float(z)],
                              float(p))
         elif match.startswith("sphere:"):
-            X = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            Y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            R = re.search(r'''(r_1\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            r = re.search(r'''(r_2\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            phi_1 = re.search(r'''(phi_1\s*=\s*(-?\d*\.?\d*))''',
+            X = re.search(r'''(x=(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y=(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
+            R = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
                               match).group(2)
-            phi_2 = re.search(r'''(phi_2\s*=\s*(-?\d*\.?\d*))''',
+            phi_2 = re.search(r'''(phi_2=(-?\d*\.?\d*))''',
                               match).group(2)
-            theta_1 = re.search(r'''(theta_1\s*=\s*(-?\d*\.?\d*))''',
+            theta_1 = re.search(r'''(theta_1=(-?\d*\.?\d*))''',
                                 match).group(2)
-            theta_2 = re.search(r'''(theta_2\s*=\s*(-?\d*\.?\d*))''',
+            theta_2 = re.search(r'''(theta_2=(-?\d*\.?\d*))''',
                                 match).group(2)
-            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+            clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
                                   match).group(2)
-            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+            retraction = re.search(r'''(retraction=(-?\d*\.?\d*))''',
                                    match).group(2)
-            gap = re.search(r'''(gap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
-            step = re.search(r'''(step\s*=\s*(-?\d*\.?\d*))''',
+            gap = re.search(r'''(gap=(-?\d*\.?\d*))''', match).group(2)
+            f = re.search(r'''(f=(-?\d*))''', match).group(2)
+            step = re.search(r'''(step=(-?\d*\.?\d*))''',
                              match).group(2)
             return self.sphere(float(X), float(Y), float(Z),
                                float(R), float(r), float(phi_1),
@@ -60,59 +67,59 @@ class Pypplang:
                                float(gap), float(f), float(step))
 
         elif match.startswith("cylinder:"):
-            X = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            Y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            H = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            R = re.search(r'''(r_1\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            r = re.search(r'''(r_2\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            phi_1 = re.search(r'''(phi_1\s*=\s*(-?\d*\.?\d*))''',
+            X = re.search(r'''(x=(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y=(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
+            R = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
                               match).group(2)
-            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+            clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
                                   match).group(2)
-            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+            retraction = re.search(r'''(retraction=(-?\d*\.?\d*))''',
                                    match).group(2)
-            gap = re.search(r'''(gap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
+            gap = re.search(r'''(gap=(-?\d*\.?\d*))''', match).group(2)
+            f = re.search(r'''(f=(-?\d*))''', match).group(2)
             return self.cylinder(float(X), float(Y), float(Z), float(H),
                                  float(R), float(r), float(phi_1), float(1),
                                  float(clearance), float(retraction),
                                  float(gap), float(f))
 
         elif match.startswith("bore:"):
-            X = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            Y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            H = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            R = re.search(r'''(r_1\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            r = re.search(r'''(r_2\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            phi_1 = re.search(r'''(phi_1\s*=\s*(-?\d*\.?\d*))''',
+            X = re.search(r'''(x=(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y=(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
+            R = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
                               match).group(2)
-            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+            clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
                                   match).group(2)
-            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+            retraction = re.search(r'''(retraction=(-?\d*\.?\d*))''',
                                    match).group(2)
-            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
+            f = re.search(r'''(f=(-?\d*))''', match).group(2)
             return self.bore(float(X), float(Y), float(Z), float(H),
                                  float(R), float(r), float(phi_1), float(1),
                                  float(clearance), float(retraction),
                                  float(f))
 
         elif match.startswith("polybore:"):
-            X = re.search(r'''(x\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            Y = re.search(r'''(y\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            H = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            R = re.search(r'''(r_1\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            r = re.search(r'''(r_2\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            phi_1 = re.search(r'''(phi_1\s*=\s*(-?\d*\.?\d*))''',
+            X = re.search(r'''(x=(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y=(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
+            R = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
                               match).group(2)
-            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+            clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
                                   match).group(2)
-            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+            retraction = re.search(r'''(retraction=(-?\d*\.?\d*))''',
                                    match).group(2)
-            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
-            failure = re.search(r'''(failure\s*=\s*(-?\d*\.?\d*))''',
+            f = re.search(r'''(f=(-?\d*))''', match).group(2)
+            failure = re.search(r'''(failure=(-?\d*\.?\d*))''',
                                 match).group(2)
             return self.polybore(float(X), float(Y), float(Z), float(H),
                                  float(R), float(r), float(phi_1), float(1),
@@ -120,23 +127,26 @@ class Pypplang:
                                  float(f), float(failure))
 
         elif match.startswith("contour:"):
-            Z = re.search(r'''(z\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            H = re.search(r'''(h\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            r = re.search(r'''(r\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            ap = re.search(r'''(ap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            clearance = re.search(r'''(clearance\s*=\s*(-?\d*\.?\d*))''',
+            Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r=(-?\d*\.?\d*))''', match).group(2)
+            ap = re.search(r'''(ap=(-?\d*\.?\d*))''', match).group(2)
+            clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
                                   match).group(2)
-            retraction = re.search(r'''(retraction\s*=\s*(-?\d*\.?\d*))''',
+            retraction = re.search(r'''(retraction=(-?\d*\.?\d*))''',
                                    match).group(2)
-            gap = re.search(r'''(gap\s*=\s*(-?\d*\.?\d*))''', match).group(2)
-            f = re.search(r'''(f\s*=\s*(-?\d*))''', match).group(2)
-            contour_match = re.finditer(r'''(line\(-?\d*\.?\d*,\s*'''
-                                        r'''-?\d*\.?\d*,\s*'''
+            gap = re.search(r'''(gap=(-?\d*\.?\d*))''', match).group(2)
+            f = re.search(r'''(f=(-?\d*))''', match).group(2)
+            contour_match = re.finditer(r'''(line\(-?\d*\.?\d*,'''
+                                        r'''-?\d*\.?\d*,'''
                                         r'''-?\d*\.?\d*\)|'''
-                                        r'''circle\(-?\d*\.?\d*,\s*'''
-                                        r'''-?\d*\.?\d*,\s*-?\d*'''
-                                        r'''\.?\d*,\s*-?\d*\.?\d*,'''
-                                        r'''(cw|ccw)\))''', match)
+                                        r'''circle\(-?\d*\.?\d*,'''
+                                        r'''-?\d*\.?\d*,'''
+                                        r'''-?\d*\.?\d*,'''
+                                        r'''-?\d*\.?\d*,'''
+                                        r'''-?\d*\.?\d*,'''
+                                        r'''(cw|ccw)\))''',
+                                        match, re.IGNORECASE)
             return self.contour(float(Z), float(H), float(r),
                                 float(ap), float(clearance),
                                 float(retraction), float(gap),
@@ -546,12 +556,14 @@ class Pypplang:
         # feedrate
         result += "[[feed(" + self.atof(feedrate) + ")]]\n"
 
-        line_start = re.search(r'''line\((-?\d*\.?\d*)\s*,\s*'''
-                               r'''(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
-                               contour.__next__().group(1), re.IGNORECASE)
-        line_end = re.search(r'''line\((-?\d*\.?\d*)\s*,\s*'''
-                             r'''(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
-                             contour.__next__().group(1), re.IGNORECASE)
+        nextcmd = contour.__next__().group(1)
+        line_start = re.search(r'''line\((-?\d*\.?\d*),'''
+                               r'''(-?\d*\.?\d*),(-?\d*\.?\d*)\)''',
+                               nextcmd, re.IGNORECASE)
+        nextcmd = contour.__next__().group(1)
+        line_end = re.search(r'''line\((-?\d*\.?\d*),'''
+                             r'''(-?\d*\.?\d*),(-?\d*\.?\d*)\)''',
+                             nextcmd, re.IGNORECASE)
 
         x0 = float(line_start.group(1))
         y0 = float(line_start.group(2))
@@ -566,13 +578,10 @@ class Pypplang:
         x10n = y10
         y10n = -x10
         # normalize
-        x10n = x10n / math.sqrt(x10n**2 + y10n**2)
-        y10n = y10n / math.sqrt(x10n**2 + y10n**2)
-        # scale distance
-        x0T = x0 + (x10n * r)
-        y0T = y0 + (y10n * r)
-        x1T = x1 + (x10n * r)
-        y1T = y1 + (y10n * r)
+        x0T = x0 + (x10n * r) / (math.sqrt(x10n**2 + y10n**2))
+        y0T = y0 + (y10n * r) / (math.sqrt(x10n**2 + y10n**2))
+        x1T = x1 + (x10n * r) / (math.sqrt(x10n**2 + y10n**2))
+        y1T = y1 + (y10n * r) / (math.sqrt(x10n**2 + y10n**2))
 
         # start point
         # direction vector
@@ -585,48 +594,133 @@ class Pypplang:
         x_start = x0T + (x10Tn * (r+gap))
         y_start = y0T + (y10Tn * (r+gap))
 
-        points.append([x_start, y_start])
+        points.append([0, x_start, y_start])
+
+        last_type = 0
 
         for m in contour:
-            # copy last point to start point
-            x2 = x1
-            y2 = y1
-            # read next line
-            line = re.search(r'''line\((-?\d*\.?\d*)\s*,\s*'''
-                             r'''(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)\)''',
-                             m.group(1), re.IGNORECASE)
-            x3 = float(line.group(1))
-            y3 = float(line.group(2))
+            # read next segment
+            segment = re.search(r'''line\((-?\d*\.?\d*),'''
+                                r'''(-?\d*\.?\d*),(-?\d*\.?\d*)\)''',
+                                m.group(1), re.IGNORECASE)
+            type_ = 0   # line
+            # if elements isn't line, read cyrcle
+            if segment is None:
+                segment = re.search(r'''circle\((-?\d*\.?\d*),'''
+                                    r'''(-?\d*\.?\d*),'''
+                                    r'''(-?\d*\.?\d*),'''
+                                    r'''(-?\d*\.?\d*),'''
+                                    r'''(-?\d*\.?\d*),(cw|ccw)\)''',
+                                    m.group(1), re.IGNORECASE)
+                # circle centre
+                cx = float(segment.group(4))
+                cy = float(segment.group(5))
+                dir_ = segment.group(6)
+                type_ = 1   # circle
+                if math.sqrt((cx-x1)**2+(cy-y1)**2) < r:
+                    x0 = x1
+                    y0 = y1
+                    x1 = float(segment.group(1))
+                    y1 = float(segment.group(2))
+                    last_type = 0
+                    continue
 
-            # direction vector
-            x23 = x3 - x2
-            y23 = y3 - y2
-            # rotate 90deg
-            x23n = y23
-            y23n = -x23
-            # normalize
-            x23n = x23n / math.sqrt(x23n**2 + y23n**2)
-            y23n = y23n / math.sqrt(x23n**2 + y23n**2)
-            # scale distance
-            x2T = x2 + (x23n * r)
-            y2T = y2 + (y23n * r)
-            x3T = x3 + (x23n * r)
-            y3T = y3 + (y23n * r)
+            x2 = float(segment.group(1))
+            y2 = float(segment.group(2))
+
+            # get 1T_2 and 2T
+            # if segment is line
+            if type_ == 0:
+                # direction vector
+                x12 = x2 - x1
+                y12 = y2 - y1
+                # rotate 90deg
+                x12n = y12
+                y12n = -x12
+                # normalize
+                x1T_2 = x1 + ((x12n * r) / math.sqrt(x12n**2 + y12n**2))
+                y1T_2 = y1 + ((y12n * r) / math.sqrt(x12n**2 + y12n**2))
+                x2T = x2 + ((x12n * r) / math.sqrt(x12n**2 + y12n**2))
+                y2T = y2 + ((y12n * r) / math.sqrt(x12n**2 + y12n**2))
+
+            # if segment is circle
+            if type_ == 1:
+                # direction 1 to centre
+                x1c = cx - x1
+                y1c = cy - y1
+                # direction 2 to centre
+                x2c = cx - x2
+                y2c = cy - y2
+                # normalize
+                x1T_2 = x1 + ((x1c * r) / math.sqrt(x1c**2 + y1c**2))
+                y1T_2 = y1 + ((y1c * r) / math.sqrt(x1c**2 + y1c**2))
+                x2T = x2 + ((x2c * r) / math.sqrt(x2c**2 + y2c**2))
+                y2T = y2 + ((y2c * r) / math.sqrt(x2c**2 + y2c**2))
+                # get x1T_2T by rotating 2c
+                x1T_2T = x1T_2 + y1c
+                y1T_2T = y1T_2 - x1c
+                # get x2TT by rotating 2c
+                x2TT = x2T + y2c
+                y2TT = y2T - x2c
+
+            # / get 1T_2 and 2T
+
             # find intersection
-            Px = ((x0T*y1T-y0T*x1T)*(x2T-x3T)-(x0T-x1T)*(x2T*y3T-y2T*x3T))/ \
-                 ((x0T-x1T)*(y2T-y3T)-(y0T-y1T)*(x2T-x3T))
-            Py = ((x0T*y1T-y0T*x1T)*(y2T-y3T)-(y0T-y1T)*(x2T*y3T-y2T*x3T))/ \
-                 ((x0T-x1T)*(y2T-y3T)-(y0T-y1T)*(x2T-x3T))
-            # write line
-            points.append([Px, Py])
-            x0 = x2
-            x0T = x2T
-            y0 = y2
-            y0T = y2T
-            x1 = x3
-            x1T = x3T
-            y1 = y3
-            y1T = y3T
+            # if actual and last segment are line
+            if type_ == 0 and last_type == 0:
+                Sx, Sy = intersect(x0T, y0T, x1T, y1T,
+                                   x2T, y2T, x1T_2, y1T_2)
+
+            # if actual segment ist line and last was circle
+            if type_ == 0 and last_type == 1:
+                if abs(x1T-x1T_2)<0.002 and abs(y1T-y1T_2)<0.002:
+                    Sx = x1T
+                    Sy = y1T
+                else:
+                    Sx, Sy = intersect(x1T, y1T, x1TT, y1TT,
+                                       x1T_2, y1T_2, x2T, y2T)
+
+            # if actual segment ist circle
+            if type_ == 1:
+                if abs(x1T-x1T_2)<0.002 and abs(y1T-y1T_2)<0.002:
+                    Sx = x1T
+                    Sy = y1T
+                else:
+                    print(x0T, y0T)
+                    print(x1T, y1T)
+                    print(x1T_2, y1T_2)
+                    print(x1T_2T, y1T_2T)
+                    Sx, Sy = intersect(x0T, y0T, x1T, y1T,
+                                       x1T_2, y1T_2, x1T_2T, y1T_2T)
+
+            # write segment
+            if last_type == 0:
+                if type_ == 0:
+                    points.append([0, Sx, Sy])
+                if type_ == 1:
+                    points.append([0, Sx, Sy])
+                    if abs(Sx-x1T_2)>0.002 and abs(Sy-y1T_2)>0.002:
+                        points.append([0, x1T_2, y1T_2])
+                    points.append([1, x2T, y2T, cx, cy, dir_])
+
+            # copy points for next itteration
+            if type_ == 0:
+                x0T = Sx
+                y0T = Sy
+            if type_ == 1:
+                x0T = x1T_2
+                y0T = y1T_2
+                x1TT = x2TT
+                y1TT = y2TT
+            x0 = x1
+            y0 = y1
+            x1 = x2
+            y1 = y2
+            x1T = x2T
+            y1T = y2T
+
+            last_type = type_
+        # / for m in contour
 
         # end point
         # direction vector
@@ -639,7 +733,7 @@ class Pypplang:
         x_end = x1T + (x01Tn * gap)
         y_end = y1T + (y01Tn * gap)
 
-        points.append([x_end, y_end])
+        points.append([0, x_end, y_end])
 
         n = math.ceil(H / ap)
         ap = H / n
@@ -649,8 +743,8 @@ class Pypplang:
             z = z - ap
             # start
             # retraction plane
-            result += "[[Rapid(" + self.atof(points[0][0]) + ", "
-            result += self.atof(points[0][1]) + ", "
+            result += "[[Rapid(" + self.atof(points[0][1]) + ", "
+            result += self.atof(points[0][2]) + ", "
             result += self.atof(retraction) + ")]]\n"
 
             # gap
@@ -661,8 +755,15 @@ class Pypplang:
 
             # contour
             for p in points[1:]:
-                result += "[[Line(" + self.atof(p[0]) + ", "
-                result += self.atof(p[1]) + ", )]]\n"
+                if p[0] == 0:
+                    result += "[[Line(" + self.atof(p[1]) + ", "
+                    result += self.atof(p[2]) + ", )]]\n"
+                elif p[0] == 1:
+                    result += "[[Circle(" + self.atof(p[1]) + ", "
+                    result += self.atof(p[2]) + ", ,"
+                    result += self.atof(p[3]) + ", "
+                    result += self.atof(p[4]) + ", "
+                    result += dir_ + ")]]\n"
 
             # end
             # clearance

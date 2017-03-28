@@ -124,12 +124,34 @@ class Language(object):
                                  r'''((ccw)|(cw))\)''',
                                  str, re.IGNORECASE)
         if match_circle is not None:
-            return self.circle(float(match_circle.group(1)),
-                               float(match_circle.group(2)),
-                               float(match_circle.group(3)),
-                               float(match_circle.group(4)),
-                               float(match_circle.group(5)),
+            x = match_circle.group(1)
+            y = match_circle.group(2)
+            z = match_circle.group(3)
+            X = match_circle.group(4)
+            Y = match_circle.group(5)
+            if x is not "":
+                x = float(x)
+            else:
+                x = None
+            if y is not "":
+                y = float(y)
+            else:
+                y = None
+            if z is not "":
+                z = float(z)
+            else:
+                z = None
+
+            return self.circle(x, y, z,
+                               float(X),
+                               float(Y),
                                match_circle.group(6))
+            if x is not None:
+                self.x = x
+            if y is not None:
+                self.y = y
+            if z is not None:
+                self.z = z
 
         return str
 
@@ -176,9 +198,12 @@ officia deserunt mollit anim id est laborum.""" + '\n'
             result = "G2"
         elif direction == "ccw":
             result = "G3"
-        result += " X" + self.atof(x)
-        result += " Y" + self.atof(y)
-        result += " Z" + self.atof(z)
+        if x is not None:
+            result += " X" + self.atof(x)
+        if y is not None:
+            result += " Y" + self.atof(y)
+        if z is not None:
+            result += " Z" + self.atof(z)
         result += " I" + self.atof(i-self.x)
         result += " J" + self.atof(j-self.y) + "\n"
         return result
