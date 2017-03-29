@@ -73,6 +73,7 @@ class Pypplang:
             H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
             R = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
             r = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
+            pitch = re.search(r'''(pitch=(-?\d*\.?\d*))''', match).group(2)
             phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
                               match).group(2)
             clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
@@ -82,9 +83,9 @@ class Pypplang:
             gap = re.search(r'''(gap=(-?\d*\.?\d*))''', match).group(2)
             f = re.search(r'''(f=(-?\d*))''', match).group(2)
             return self.cylinder(float(X), float(Y), float(Z), float(H),
-                                 float(R), float(r), float(phi_1), float(1),
-                                 float(clearance), float(retraction),
-                                 float(gap), float(f))
+                                 float(R), float(r), float(pitch),
+                                 float(phi_1), float(clearance),
+                                 float(retraction), float(gap), float(f))
 
         elif match.startswith("bore:"):
             X = re.search(r'''(x=(-?\d*\.?\d*))''', match).group(2)
@@ -93,6 +94,7 @@ class Pypplang:
             H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
             R = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
             r = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
+            pitch = re.search(r'''(pitch=(-?\d*\.?\d*))''', match).group(2)
             phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
                               match).group(2)
             clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
@@ -101,9 +103,9 @@ class Pypplang:
                                    match).group(2)
             f = re.search(r'''(f=(-?\d*))''', match).group(2)
             return self.bore(float(X), float(Y), float(Z), float(H),
-                                 float(R), float(r), float(phi_1), float(1),
-                                 float(clearance), float(retraction),
-                                 float(f))
+                                 float(R), float(r), float(pitch),
+                                 float(phi_1), float(clearance),
+                                 float(retraction), float(f))
 
         elif match.startswith("polybore:"):
             X = re.search(r'''(x=(-?\d*\.?\d*))''', match).group(2)
@@ -112,6 +114,7 @@ class Pypplang:
             H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
             R = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
             r = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
+            pitch = re.search(r'''(pitch=(-?\d*\.?\d*))''', match).group(2)
             phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
                               match).group(2)
             clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
@@ -122,9 +125,32 @@ class Pypplang:
             failure = re.search(r'''(failure=(-?\d*\.?\d*))''',
                                 match).group(2)
             return self.polybore(float(X), float(Y), float(Z), float(H),
-                                 float(R), float(r), float(phi_1), float(1),
-                                 float(clearance), float(retraction),
-                                 float(f), float(failure))
+                                 float(R), float(r), float(phi_1),
+                                 float(pitch), float(clearance),
+                                 float(retraction), float(f), float(failure))
+
+        elif match.startswith("cone:"):
+            X = re.search(r'''(x=(-?\d*\.?\d*))''', match).group(2)
+            Y = re.search(r'''(y=(-?\d*\.?\d*))''', match).group(2)
+            Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
+            H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
+            R1 = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
+            R2 = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
+            r = re.search(r'''(r_3=(-?\d*\.?\d*))''', match).group(2)
+            pitch = re.search(r'''(pitch=(-?\d*\.?\d*))''', match).group(2)
+            phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
+                              match).group(2)
+            clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
+                                  match).group(2)
+            retraction = re.search(r'''(retraction=(-?\d*\.?\d*))''',
+                                   match).group(2)
+            f = re.search(r'''(f=(-?\d*))''', match).group(2)
+            failure = re.search(r'''(failure=(-?\d*\.?\d*))''',
+                                match).group(2)
+            return self.cone(float(X), float(Y), float(Z), float(H),
+                             float(R1), float(R2), float(r), float(phi_1),
+                             float(pitch), float(clearance),
+                             float(retraction), float(f), float(failure))
 
         elif match.startswith("contour:"):
             Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
@@ -248,7 +274,7 @@ class Pypplang:
 
         return result
 
-    def bore(self, X, Y, Z, H, R, r, phi_1, pitch,
+    def bore(self, X, Y, Z, H, R, r, pitch, phi_1,
              clearance, retraction, feedrate):
 
         phi_1 = math.radians(phi_1)
@@ -403,7 +429,12 @@ class Pypplang:
         result += "[[comment:/polybore]]\n"
         return result
 
-    def cylinder(self, X, Y, Z, H, R, r, phi_1, pitch,
+    def cone(self, X, Y, Z, H, R1, R2, r, pitch, phi_1,
+             clearance, retraction, feedrate, failure):
+        result = ""
+        return result
+
+    def cylinder(self, X, Y, Z, H, R, r, pitch, phi_1,
                  clearance, retraction, gap, feedrate):
 
         phi_1 = math.radians(phi_1)

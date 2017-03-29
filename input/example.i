@@ -1,10 +1,5 @@
 12 G17 G90
 T1 M6
-//G1 X-9 Y-29.184
-//G1 Z-11.5
-//G1 X-7.811 Y-27.994
-//G2 X-5.689 Y-27.994 I1.061 J-1.061
-//G1 X-4.5 Y-29.184
 [[bore:
 X=23.33
 Y=-26.16
@@ -12,10 +7,26 @@ Z=-16.5
 H=0.5
 r_1=3
 r_2=2
+pitch=0.1
 phi_1=0
 clearance=2
 retraction=5
 F=2000
+]]
+[[cone:
+X=15.385
+Y=-6
+Z=-8
+H=5
+r_1=1.34
+r_2=10
+r_3=3
+pitch=0.1
+phi_1=0
+clearance=2
+retraction=5
+F=2000
+failure=0.001
 ]]
 [[contour:
 Z=-5
@@ -115,12 +126,14 @@ F=2000
 [[circle(7.139, -27.323, , 6.75, -27.712, cw)]]
 [[Line(9, -29.184,)]]
 ]]
-[[polybore:X=36
+[[polybore:
+X=36
 Y=36
 Z=-20.5
 H=3
 r_1=3
 r_2=2
+pitch=0.1
 phi_1=0
 clearance=2
 retraction=5
@@ -134,6 +147,7 @@ Z=-20.5
 H=3
 r_1=3
 r_2=2
+pitch=0.1
 phi_1=0
 clearance=2
 retraction=5
@@ -147,6 +161,7 @@ Z=-20.5
 H=3
 r_1=3
 r_2=2
+pitch=0.1
 phi_1=0
 clearance=2
 retraction=5
@@ -160,6 +175,7 @@ Z=-20.5
 H=3
 r_1=3
 r_2=2
+pitch=0.1
 phi_1=0
 clearance=2
 retraction=5
@@ -188,6 +204,7 @@ Z=-5
 H=4.5
 r_1=4
 r_2=3
+pitch=0.5
 phi_1=90
 clearance=2
 retraction=5
@@ -200,6 +217,7 @@ Z=-16.5
 H=0.5
 r_1=3
 r_2=2
+pitch=0.1
 phi_1=0
 clearance=2
 retraction=5
