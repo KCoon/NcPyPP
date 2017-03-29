@@ -134,23 +134,27 @@ class Pypplang:
             Y = re.search(r'''(y=(-?\d*\.?\d*))''', match).group(2)
             Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
             H = re.search(r'''(h=(-?\d*\.?\d*))''', match).group(2)
+            zmax = re.search(r'''(zmax=(-?\d*\.?\d*))''', match).group(2)
             R1 = re.search(r'''(r_1=(-?\d*\.?\d*))''', match).group(2)
             R2 = re.search(r'''(r_2=(-?\d*\.?\d*))''', match).group(2)
             r = re.search(r'''(r_3=(-?\d*\.?\d*))''', match).group(2)
             pitch = re.search(r'''(pitch=(-?\d*\.?\d*))''', match).group(2)
-            phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''',
-                              match).group(2)
+            phi_1 = re.search(r'''(phi_1=(-?\d*\.?\d*))''', match).group(2)
+            overrun = re.search(r'''(overrun=(-?\d*\.?\d*))''',
+                                match).group(2)
             clearance = re.search(r'''(clearance=(-?\d*\.?\d*))''',
                                   match).group(2)
             retraction = re.search(r'''(retraction=(-?\d*\.?\d*))''',
                                    match).group(2)
+            gap = re.search(r'''(gap=(-?\d*\.?\d*))''', match).group(2)
             f = re.search(r'''(f=(-?\d*))''', match).group(2)
             failure = re.search(r'''(failure=(-?\d*\.?\d*))''',
                                 match).group(2)
             return self.cone(float(X), float(Y), float(Z), float(H),
-                             float(R1), float(R2), float(r), float(phi_1),
-                             float(pitch), float(clearance),
-                             float(retraction), float(f), float(failure))
+                             float(zmax), float(R1), float(R2), float(r),
+                             float(pitch), float(phi_1), float(overrun),
+                             float(clearance), float(retraction), float(gap),
+                             float(f), float(failure))
 
         elif match.startswith("contour:"):
             Z = re.search(r'''(z=(-?\d*\.?\d*))''', match).group(2)
@@ -429,9 +433,106 @@ class Pypplang:
         result += "[[comment:/polybore]]\n"
         return result
 
-    def cone(self, X, Y, Z, H, R1, R2, r, pitch, phi_1,
-             clearance, retraction, feedrate, failure):
-        result = ""
+    def cone(self, X, Y, Z, H, zmax, R1, R2, r, pitch, phi_1,
+             overrun, clearance, retraction, gap, feedrate, failure):
+
+        phi_1 = math.radians(phi_1)
+
+        # angle between cone surface and base area
+        alpha = math.atan(H/(R2-R1))
+        # effective radius of cutter
+        r_eff = r * math.sin(alpha)
+        # delta z between tcp and cutting point
+        dz = r - r * math.cos(alpha)
+
+        Hn = H + 2 * overrun
+        if Z - H - overrun - dz < zmax:
+            Hn = Z - zmax + overrun - dz
+
+        Rx = (((R2-R1)*(H+overrun))/H)
+        Ry = (((R2-R1)*(Hn))/H)
+        R1n = R2 - Rx
+        R2n = Ry + R1n
+        R1 = R1n
+        R2 = R2n
+        Z = Z+overrun
+        H = Hn
+
+        result = "[[comment:cone]]\n"
+        R = R1
+        x = X + (R + r_eff) * \
+            math.cos(phi_1) + \
+            gap * math.cos(phi_1 - math.pi * 0.5)
+        y = Y + (R + r_eff) * \
+            math.sin(phi_1) + \
+            gap * math.sin(phi_1 - math.pi * 0.5)
+        # feedrate
+        result += "[[feed(" + self.atof(feedrate) + ")]]\n"
+
+        # retraction plane
+        result += "[[Rapid(" + self.atof(x) + ", "
+        result += self.atof(y) + ", "
+        result += self.atof(retraction) + ")]]\n"
+
+        # gap
+        z = Z + clearance
+
+        result += "[[Rapid(,," + self.atof(z) + ")]]\n"
+
+        # z start plane
+        z = Z - dz
+        result += "[[Line(,," + self.atof(z) + ")]]\n"
+
+        x = X + (R + r_eff) * \
+            math.cos(phi_1)
+        y = Y + (R + r_eff) * \
+            math.sin(phi_1)
+        result += "[[Line(" + self.atof(x) + ", "
+        result += self.atof(y) + ",)]]\n"
+
+        n = math.ceil(H / pitch)
+        pitch = H / n
+
+        for j in range(1, n + 1):
+            R = (((Z-z-dz-pitch)*(R2-R1))/H)+R1
+            phi_max = 2 * math.acos(-failure/(R+r_eff)+1)
+            # number of steps per revolusion
+            m = math.ceil(2 * math.pi / phi_max)
+            phi = 2 * math.pi / m
+            # pitch per increment
+            dpitch = pitch / m
+            print(m)
+            for i in range(1, m+1):
+                z = z - dpitch
+                R = (((Z-z-dz)*(R2-R1))/H)+R1
+                x = X + (R+r_eff) * math.cos(phi_1 + phi*i)
+                y = Y + (R+r_eff) * math.sin(phi_1 + phi*i)
+                result += "[[Line(" + self.atof(x) + ", "
+                result += self.atof(y) + ", "
+                result += self.atof(z) + ")]]\n"
+
+        for i in range(1, m+1):
+            x = X + (R+r_eff) * math.cos(phi*i)
+            y = Y + (R+r_eff) * math.sin(phi*i)
+            result += "[[Line(" + self.atof(x) + ", "
+            result += self.atof(y) + ", )]]\n"
+
+        # departure
+        x = X + (R + r_eff) * \
+            math.cos(phi_1) + \
+            gap * math.cos(phi_1 + math.pi * 0.5)
+        y = Y + (R + r_eff) * \
+            math.sin(phi_1) + \
+            gap * math.sin(phi_1 + math.pi * 0.5)
+
+        result += "[[Line(" + self.atof(x) + ", "
+        result += self.atof(y) + ", )]]\n"
+
+        # retraction plane
+        result += "[[Rapid(" + ", , "
+        result += self.atof(retraction) + ")]]\n"
+
+        result += "[[comment:/cone]]\n"
         return result
 
     def cylinder(self, X, Y, Z, H, R, r, pitch, phi_1,

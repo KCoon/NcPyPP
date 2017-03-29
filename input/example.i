@@ -18,49 +18,18 @@ X=15.385
 Y=-6
 Z=-8
 H=5
+Zmax=-13.5
 r_1=1.34
 r_2=10
 r_3=3
-pitch=0.1
-phi_1=0
+pitch=0.125
+phi_1=45
+overrun=0.2
 clearance=2
 retraction=5
+gap=1
 F=2000
 failure=0.001
-]]
-[[contour:
-Z=-5
-H=1
-r=0.5
-ap=0.4
-clearance=2
-retraction=5
-gap=1
-side=right
-F=2000
-[[Line(0, 0,)]]
-[[Line(5, 0, )]]
-[[circle(7, 2, , 5, 2, ccw)]]
-[[circle(9, 4, , 9, 2, cw)]]
-[[Line(12, 4, )]]
-[[Line(15, 8, )]]
-]]
-[[contour:
-Z=-5
-H=1
-r=0.5
-ap=0.4
-clearance=2
-retraction=5
-gap=1
-side=left
-F=2000
-[[Line(0, 0,)]]
-[[Line(5, 0, )]]
-[[circle(7, 2, , 5, 2, ccw)]]
-[[circle(9, 4, , 9, 2, cw)]]
-[[Line(12, 4, )]]
-[[Line(15, 8, )]]
 ]]
 [[contour:
 Z=-14
@@ -87,30 +56,6 @@ clearance=2
 retraction=5
 gap=1
 side=right
-F=2000
-[[Line(-9, -29.184,)]]
-[[Line(-7.811, -27.994, )]]
-[[circle(-5.689, -27.994, , -6.75, -29.055, cw)]]
-[[Line(-4.5, -29.184, )]]
-[[Line(-2.957, -27.641, )]]
-[[circle(-1.543, -27.641, , -2.25, -28.348, cw)]]
-[[Line(0, -29.184,)]]
-[[Line(1.72, -27.464,)]]
-[[circle(2.78, -27.464, , 2.25, -27.994, cw)]]
-[[Line(4.5, -29.184,)]]
-[[Line(6.361, -27.323,)]]
-[[circle(7.139, -27.323, , 6.75, -27.712, cw)]]
-[[Line(9, -29.184,)]]
-]]
-[[contour:
-Z=-10.5
-H=1
-r=0.5
-ap=0.4
-clearance=2
-retraction=5
-gap=1
-side=left
 F=2000
 [[Line(-9, -29.184,)]]
 [[Line(-7.811, -27.994, )]]
