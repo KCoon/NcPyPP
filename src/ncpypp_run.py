@@ -17,11 +17,12 @@ from ncpypp.pp import PP
 def get_help():
     '''
     @brief help text for usage
-    @param None
+    @param None really
     @return string-type helptext
     @exception None
     '''
     msg = "NcPyPP is a postprocessor engine for nc programs"
+
     return msg
 
 
