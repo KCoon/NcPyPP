@@ -7,5 +7,5 @@ all:
 	$(MAKE) run
 
 doc:
-	doxygen ./docu/Doxyfile
+	cd ./docu && doxygen  && cd ..
 
